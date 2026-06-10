@@ -364,6 +364,9 @@
       transform-style: preserve-3d;
       animation: dealIn 420ms ease both;
       animation-delay: calc(var(--order) * 40ms);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
     .card:focus-visible {
@@ -376,11 +379,21 @@
       position: relative;
       display: grid;
       transform-style: preserve-3d;
-      transition: transform 520ms cubic-bezier(0.2, 0.7, 0.2, 1);
+      isolation: isolate;
     }
 
-    .card.revealed .card-inner {
-      transform: rotateY(180deg);
+    .card-inner::after {
+      content: "";
+      position: absolute;
+      inset: 8px 10px 8px auto;
+      width: 16px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.2));
+      opacity: 0;
+      transform: translateX(-6px);
+      transition: opacity 420ms ease, transform 420ms ease;
+      pointer-events: none;
+      z-index: 1;
     }
 
     .card-side {
@@ -397,11 +410,19 @@
 
     .card-back {
       position: relative;
+      z-index: 2;
       justify-content: space-between;
       padding: 18px;
       background:
         radial-gradient(circle at 50% 10%, rgba(233, 204, 146, 0.22), transparent 34%),
         linear-gradient(180deg, rgba(26, 52, 44, 0.98), rgba(7, 18, 16, 0.98));
+      transform-origin: left center;
+      transform: rotateY(0deg);
+      transition:
+        transform 760ms cubic-bezier(0.18, 0.75, 0.16, 1),
+        box-shadow 760ms cubic-bezier(0.18, 0.75, 0.16, 1),
+        filter 760ms ease;
+      will-change: transform;
     }
 
     .card-back::before,
@@ -449,16 +470,47 @@
 
     .card-back .back-hint {
       position: relative;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      min-height: 2.9em;
       text-align: center;
       color: rgba(255, 246, 227, 0.7);
       font-size: 14px;
+      line-height: 1.4;
       z-index: 1;
     }
 
     .card-front {
-      transform: rotateY(180deg);
+      z-index: 1;
       background: var(--surface-strong);
       color: var(--ink);
+      transform: scale(0.992);
+      transform-origin: left center;
+      opacity: 0;
+      transition:
+        transform 520ms cubic-bezier(0.2, 0.7, 0.2, 1),
+        opacity 520ms ease,
+        box-shadow 520ms ease;
+    }
+
+    .card.revealed .card-back {
+      transform: rotateY(-168deg);
+      box-shadow:
+        -18px 16px 32px rgba(0, 0, 0, 0.26),
+        0 10px 18px rgba(4, 10, 9, 0.1);
+      filter: brightness(0.96);
+    }
+
+    .card.revealed .card-front {
+      transform: scale(1) translateX(0);
+      opacity: 1;
+      box-shadow: 0 22px 42px rgba(4, 10, 9, 0.24);
+    }
+
+    .card.revealed .card-inner::after {
+      opacity: 1;
+      transform: translateX(0);
     }
 
     .card-art {
@@ -547,6 +599,7 @@
     .board[data-spread="36"] .card-back .back-hint {
       font-size: 12px;
       line-height: 1.4;
+      min-height: 3.1em;
     }
 
     .board[data-spread="36"] .card-body {
@@ -687,6 +740,7 @@
     }
 
     @media (max-width: 980px) {
+      .layout.grand-layout .board[data-spread="36"],
       .board[data-spread="36"] {
         grid-template-columns: repeat(4, minmax(0, 1fr));
       }
@@ -713,8 +767,33 @@
     }
 
     @media (max-width: 760px) {
+      .controls-top {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .spread-buttons,
+      .theme-picker {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .action-buttons {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .spread-btn,
+      .theme-btn,
+      .action-btn {
+        min-height: 46px;
+        justify-content: center;
+      }
+
+      .layout.grand-layout .board[data-spread="36"],
       .board[data-spread="36"] {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
       }
     }
 
@@ -734,11 +813,51 @@
       .board[data-spread="3"],
       .board[data-spread="5"],
       .board[data-spread="9"] {
-        grid-template-columns: repeat(2, minmax(140px, 1fr));
+        grid-template-columns: repeat(2, minmax(132px, 1fr));
+        gap: 12px;
       }
 
       .board[data-spread="1"] {
         grid-template-columns: minmax(160px, 230px);
+      }
+
+      .card-side {
+        min-height: 250px;
+        border-radius: 18px;
+      }
+
+      .card-back {
+        padding: 14px;
+      }
+
+      .card-back .sigil {
+        width: 82px;
+        height: 82px;
+        margin-top: 20px;
+      }
+
+      .card-back .back-title {
+        font-size: 18px;
+      }
+
+      .card-back .back-hint {
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .card-body {
+        gap: 6px;
+        padding: 12px;
+      }
+
+      .card-name {
+        font-size: 20px;
+      }
+
+      .card-keywords,
+      .card-note {
+        font-size: 13px;
+        line-height: 1.5;
       }
 
       h1 {
@@ -750,11 +869,44 @@
       .board[data-spread="3"],
       .board[data-spread="5"],
       .board[data-spread="9"] {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .layout.grand-layout .board[data-spread="36"],
+      .board[data-spread="36"] {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .card-side {
-        min-height: 300px;
+        min-height: 228px;
+      }
+
+      .board[data-spread="1"] .card-side {
+        min-height: 280px;
+      }
+
+      .board[data-spread="36"] .card-side {
+        min-height: 214px;
+      }
+
+      .board[data-spread="36"] .card-back .sigil {
+        width: 68px;
+        height: 68px;
+        margin-top: 14px;
+      }
+
+      .board[data-spread="36"] .card-back .back-title {
+        font-size: 15px;
+      }
+
+      .board[data-spread="36"] .card-back .back-hint,
+      .board[data-spread="36"] .card-index,
+      .board[data-spread="36"] .card-keywords {
+        font-size: 11px;
+      }
+
+      .board[data-spread="36"] .card-name {
+        font-size: 16px;
       }
     }
   </style>
